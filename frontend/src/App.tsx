@@ -12,7 +12,7 @@ function App() {
     let mounted = true
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`${apiBase}/messages`)
+        const response = await fetch(`${apiBase}/api/messages`)
         const data = await response.json()
         if (!mounted) return
         // Expecting an array of strings (backend stores human-readable lines)
@@ -45,7 +45,7 @@ function App() {
 
     try {
       const body = { message: newMessage }
-      const response = await fetch(`${apiBase}/send`, {
+      const response = await fetch(`${apiBase}/api/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
