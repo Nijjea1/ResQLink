@@ -93,9 +93,9 @@ func main() {
 	port := flag.String("port", "", "port")
 	nickFlag := flag.String("nick", "", "nickname to use in chat. will be generated if empty")
 	roomFlag := flag.String("room", "chat-room", "name of chat room to join")
-	httpServerRun := flag.Bool("enable-http", false, "run http server on this node")
+	httpServerRun := flag.Bool("enable-http", true, "run http server on this node")
 	apiPort := flag.String("api-port", "3001", "port for HTTP API (e.g. 3001)")
-	sameNetworkString := flag.String("same_string", "", "same_string")
+	sameNetworkString := flag.String("same_string", "meshcomm", "same_string")
 
 	flag.Parse()
 	h, err := p2p.CreateHost(*port)
@@ -150,16 +150,17 @@ func main() {
 
 	if *httpServerRun {
 		go func() {
+			mux := http.NewServeMux()
+			mux.HandleFunc("/api/send", PostMessage)
+			mux.HandleFunc("/api/messages", GetMessages)
+			mux.Handle("/", setupStaticFileServer())
 
-			http.HandleFunc("/send", PostMessage)
-
-			http.HandleFunc("/messages", GetMessages)
-			listenAddr := fmt.Sprintf(":%s", *apiPort)
-			err := http.ListenAndServe(listenAddr, nil)
+			listenAddr := fmt.Sprintf("0.0.0.0:%s", *apiPort)
+			fmt.Printf("Starting HTTP server on http://%s\n", listenAddr)
+			err := http.ListenAndServe(listenAddr, mux)
 			if err != nil {
 				log.Fatal(err)
 			}
-
 		}()
 	}
 
